@@ -1,19 +1,15 @@
-import { ArrowRightOutlined } from "@ant-design/icons";
 import {
-  Button,
   Card,
-  Image,
-  Modal,
-  Typography,
+  Form,
   Row,
   Col,
   Carousel,
   Divider,
+  Typography,
   Tag,
-  Form,
-  Input,
+  Image,
 } from "antd";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ClockCircleOutlined,
   CheckCircleTwoTone,
@@ -23,32 +19,27 @@ import {
 
 const { Title, Text, Paragraph } = Typography;
 
-function ModalPage({
-  modalContent,
-  openModal,
-  setOpenModal,
-  loading,
-  buttonStyle,
-  next,
-  priceAfterVat,
-  form,
-}) {
-  const handleContinue = async () => {
-    await form.setFieldsValue({ skipSelection: modalContent });
-    console.log("Form values after setting skip:", form.getFieldsValue());
-    setOpenModal(false);
-    next();
+function FinalPage() {
+  const form = Form.useFormInstance();
+  const values = form.getFieldsValue();
+  const [skipValues, setSkipValues] = useState(null);
+
+  useEffect(() => {
+    if (values) {
+      setSkipValues(values.skipSelection);
+    }
+  }, []);
+  const calculatePriceWithVAT = (basePrice, vatPercentage) => {
+    if (!basePrice || !vatPercentage) return basePrice;
+    const vatAmount = (basePrice * vatPercentage) / 100;
+    return Math.ceil(basePrice + vatAmount);
   };
 
+  const priceAfterVat = (item) =>
+    calculatePriceWithVAT(item.price_before_vat, item.vat);
+
   return (
-    <Modal
-      footer={null}
-      open={openModal}
-      onCancel={() => setOpenModal(false)}
-      confirmLoading={loading}
-      width={750}
-      style={{ maxWidth: "95vw" }}
-    >
+    <div>
       <Card
         style={{
           borderRadius: 12,
@@ -57,17 +48,13 @@ function ModalPage({
           margin: 5,
         }}
       >
-        <Form.Item name="skipSelection" noStyle>
-          <Input type="hidden" />
-        </Form.Item>
-
         <Row gutter={[24, 24]}>
           {/* Left: Carousel */}
           <Col xs={24} md={10}>
             <Carousel autoplay autoplaySpeed={4500} dots>
-              {(modalContent?.img?.length > 0
-                ? modalContent.img
-                : [modalContent?.img]
+              {(skipValues?.img?.length > 0
+                ? skipValues.img
+                : [skipValues?.img]
               ).map((src, index) => (
                 <div key={index}>
                   <Image
@@ -89,11 +76,11 @@ function ModalPage({
           {/* Right: Details */}
           <Col xs={24} md={14}>
             <Title level={3} style={{ marginBottom: 0, fontFamily: "Raleway" }}>
-              {modalContent?.size} Yard Skip
+              {skipValues?.size} Yard Skip
             </Title>
 
             <Text type="secondary">
-              <ClockCircleOutlined /> {modalContent?.hire_period_days}-day hire
+              <ClockCircleOutlined /> {skipValues?.hire_period_days}-day hire
             </Text>
 
             <Divider style={{ margin: "12px 0" }} />
@@ -102,16 +89,15 @@ function ModalPage({
               <Col>
                 <Text type="secondary">Base Price:</Text>
                 <br />
-                <Text strong>£{modalContent?.price_before_vat}</Text>
+                <Text strong>£{skipValues?.price_before_vat}</Text>
               </Col>
               <Col>
-                <Text type="secondary">VAT ({modalContent?.vat}%)</Text>
+                <Text type="secondary">VAT ({skipValues?.vat}%)</Text>
                 <br />
                 <Text strong>
                   £
-                  {Math.ceil(
-                    modalContent?.price_before_vat * modalContent?.vat
-                  ) / 100}
+                  {Math.ceil(skipValues?.price_before_vat * skipValues?.vat) /
+                    100}
                 </Text>
               </Col>
               <Col>
@@ -119,7 +105,7 @@ function ModalPage({
                   Total (incl. VAT)
                 </Text>
                 <Title level={3} style={{ color: "#237804", marginBottom: 0 }}>
-                  {modalContent ? `£${priceAfterVat(modalContent)}` : null}
+                  {skipValues ? `£${priceAfterVat(skipValues)}` : null}
                 </Title>
               </Col>
             </Row>
@@ -129,21 +115,21 @@ function ModalPage({
             <Row gutter={[12, 12]}>
               <Col>
                 <Tag
-                  color={modalContent?.allowed_on_road ? "success" : "error"}
+                  color={skipValues?.allowed_on_road ? "success" : "error"}
                   icon={
-                    modalContent?.allowed_on_road ? (
+                    skipValues?.allowed_on_road ? (
                       <CheckCircleTwoTone twoToneColor="#52c41a" />
                     ) : (
                       <CloseCircleTwoTone twoToneColor="#ff4d4f" />
                     )
                   }
                 >
-                  {modalContent?.allowed_on_road
+                  {skipValues?.allowed_on_road
                     ? "Allowed On Road"
                     : "Not Allowed On Road"}
                 </Tag>
               </Col>
-              {modalContent?.allows_heavy_waste && (
+              {skipValues?.allows_heavy_waste && (
                 <Col>
                   <Tag icon={<InfoCircleOutlined />} color="blue">
                     Heavy Waste Permitted
@@ -158,23 +144,10 @@ function ModalPage({
             </Paragraph>
           </Col>
         </Row>
-
         <Divider />
-
-        <Button
-          type="primary"
-          icon={<ArrowRightOutlined />}
-          iconPosition="end"
-          block
-          size="large"
-          style={buttonStyle}
-          onClick={handleContinue}
-        >
-          Continue
-        </Button>
       </Card>
-    </Modal>
+    </div>
   );
 }
 
-export default ModalPage;
+export default FinalPage;

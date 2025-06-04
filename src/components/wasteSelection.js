@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Col, Form, Checkbox, Row, Typography, Alert } from "antd";
 import {
   AppstoreAddOutlined,
@@ -61,21 +61,29 @@ const cardForm = [
     icon: <BankOutlined style={iconStyle} />,
   },
 ];
-function WasteSelection() {
-  const [form] = Form.useForm();
+function WasteSelection({form}) {
   const [selectedServices, setSelectedServices] = useState([]);
 
   const handleSelect = (title) => {
-    setSelectedServices((prev) =>
-      prev.includes(title)
-        ? prev.filter((item) => item !== title)
-        : [...prev, title]
-    );
+    let updated = selectedServices.includes(title)
+      ? selectedServices.filter((item) => item !== title)
+      : [...selectedServices, title];
+
+    setSelectedServices(updated);
+
+    form.setFieldsValue({
+      wasteSelection: [{ types: updated }],
+    });
   };
 
-  const handleSubmit = async () => {
-    console.log("Selected Services:", selectedServices);
-  };
+  useEffect(() => {
+    const existing = form.getFieldValue("wasteSelection");
+    if (!existing || existing.length === 0) {
+      form.setFieldsValue({
+        wasteSelection: [{ types: [] }],
+      });
+    }
+  }, [form]);
 
   return (
     <div
@@ -105,74 +113,59 @@ function WasteSelection() {
             showIcon
           />
         </div>
-        <Form
-          layout="vertical"
-          form={form}
-          onFinish={handleSubmit}
-          style={{ margin: "8px 0px" }}
-        >
-          <Row gutter={[20, 20]}>
-            {cardForm.map((card) => (
-              <Col xs={24} sm={12} key={card.key}>
-                <Card
-                  onClick={() => handleSelect(card.title)}
-                  style={{
-                    cursor: "pointer",
-                    backgroundColor: selectedServices.includes(card.title)
-                      ? "#333"
-                      : "#141414",
-                    color: "white",
-                    border: "1px solid #333",
-                    marginBottom: 15,
-                  }}
-                  bodyStyle={{ display: "flex", alignItems: "center" }}
-                >
-                  <div style={{ marginRight: "10px" }}>{card.icon}</div>
-                  <div style={{ flex: 1 }}>
-                    <Title
-                      level={5}
+        <Form.List name="wasteSelection">
+          {(fields) =>
+            fields.map(({ key, name }) => (
+              <Row gutter={[20, 20]} key={key}>
+                {cardForm.map((card) => (
+                  <Col xs={24} sm={12} key={card.key}>
+                    <Card
+                      onClick={() => handleSelect(card.title)}
                       style={{
-                        margin: 0,
+                        cursor: "pointer",
+                        backgroundColor: selectedServices.includes(card.title)
+                          ? "#333"
+                          : "#141414",
                         color: "white",
-                        fontFamily: "Raleway",
+                        border: "1px solid #333",
+                        marginBottom: 15,
                       }}
+                      bodyStyle={{ display: "flex", alignItems: "center" }}
                     >
-                      {card.title}
-                    </Title>
-                    <p
-                      style={{
-                        color: "lightgrey",
-                        margin: 0,
-                        fontFamily: "Roboto",
-                      }}
-                    >
-                      {card.text}
-                    </p>
-                  </div>
-                  <Checkbox
-                    checked={selectedServices.includes(card.title)}
-                    onChange={() => handleSelect(card.title)}
-                    style={{ pointerEvents: "none" }}
-                  />
-                </Card>
-              </Col>
-            ))}
-          </Row>
-          {/* 
-          <Form.Item style={{ marginTop: 15 }}>
-            <Button
-              block
-              iconPosition="end"
-              icon={<ArrowRightOutlined />}
-              type="primary"
-              htmlType="submit"
-              size="large"
-              style={buttonStyle}
-            >
-              Continue
-            </Button>
-          </Form.Item> */}
-        </Form>
+                      <div style={{ marginRight: "10px" }}>{card.icon}</div>
+                      <div style={{ flex: 1 }}>
+                        <Title
+                          level={5}
+                          style={{
+                            margin: 0,
+                            color: "white",
+                            fontFamily: "Raleway",
+                          }}
+                        >
+                          {card.title}
+                        </Title>
+                        <p
+                          style={{
+                            color: "lightgrey",
+                            margin: 0,
+                            fontFamily: "Roboto",
+                          }}
+                        >
+                          {card.text}
+                        </p>
+                      </div>
+                      <Checkbox
+                        checked={selectedServices.includes(card.title)}
+                        onChange={() => handleSelect(card.title)}
+                        style={{ pointerEvents: "none" }}
+                      />
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            ))
+          }
+        </Form.List>
       </Card>
     </div>
   );

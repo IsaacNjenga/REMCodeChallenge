@@ -33,7 +33,7 @@ const buttonStyle = {
   background: "#0037c0",
 };
 
-function SkipSelection() {
+function SkipSelection({ next, form }) {
   const [modalContent, setModalContent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -215,6 +215,8 @@ function SkipSelection() {
         modalContent={modalContent}
         buttonStyle={buttonStyle}
         priceAfterVat={priceAfterVat}
+        next={next}
+        form={form}
       />
     </div>
   );

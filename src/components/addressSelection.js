@@ -1,5 +1,5 @@
-import React from "react";
-import {  Card, Form, Input, Typography } from "antd";
+import React, { useEffect } from "react";
+import { Card, Form, Input, Typography } from "antd";
 //import { ArrowRightOutlined } from "@ant-design/icons";
 const { Title } = Typography;
 
@@ -32,24 +32,26 @@ const titleStyle = {
 // };
 const cardStyle = {
   width: "550px",
-  margin: "20px auto",
+  margin: "10px auto",
   padding: 5,
   background: "rgba(0, 0, 0, 0)",
   borderColor: "rgba(0,0,0,0)",
 };
 
-function AddressSelection() {
-  const [form] = Form.useForm();
+function AddressSelection({form}) {
 
-  const handleSubmit = async () => {
-    const values = await form.validateFields();
-    console.log(values);
-  };
+  useEffect(() => {
+    const existing = form.getFieldValue("postcodeDetails");
+    if (!existing || existing.length === 0) {
+      form.setFieldsValue({
+        postcodeDetails: [{}],
+      });
+    }
+  }, [form]);
 
   return (
     <div
       style={{
-        minHeight: "100vh",
         background: "#000000",
         display: "flex",
         justifyContent: "center",
@@ -62,27 +64,32 @@ function AddressSelection() {
             Please enter your details to continue
           </Title>
         </div>
-        <Form
-          layout="vertical"
-          form={form}
-          onFinish={handleSubmit}
-          style={{ margin: "10px 0px" }}
-        >
-          <Form.Item label={<span style={labelStyle}>City</span>} name="city">
-            <Input style={inputStyle} />
-          </Form.Item>
-          <Form.Item
-            label={<span style={labelStyle}>Street Name</span>}
-            name="street_name"
-          >
-            <Input style={inputStyle} />
-          </Form.Item>
-          <Form.Item
-            label={<span style={labelStyle}>House/Flat Number</span>}
-            name="house_flat_number"
-          >
-            <Input style={inputStyle} />
-          </Form.Item>
+        <Form.List name="postcodeDetails">
+          {(fields) =>
+            fields.map(({ key, name }) => (
+              <div key={key}>
+                <Form.Item
+                  name={[name, "city"]}
+                  label={<span style={labelStyle}>City</span>}
+                >
+                  <Input style={inputStyle} />
+                </Form.Item>
+                <Form.Item
+                  name={[name, "street_name"]}
+                  label={<span style={labelStyle}>Street Name</span>}
+                >
+                  <Input style={inputStyle} />
+                </Form.Item>
+                <Form.Item
+                  name={[name, "house_flat_number"]}
+                  label={<span style={labelStyle}>House/Flat Number</span>}
+                >
+                  <Input style={inputStyle} />
+                </Form.Item>
+              </div>
+            ))
+          }
+
           {/* <Form.Item>
             <Button
               block
@@ -96,7 +103,7 @@ function AddressSelection() {
               Continue
             </Button>
           </Form.Item> */}
-        </Form>
+        </Form.List>
       </Card>
     </div>
   );
