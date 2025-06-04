@@ -61,7 +61,7 @@ const cardForm = [
     icon: <BankOutlined style={iconStyle} />,
   },
 ];
-function WasteSelection({form}) {
+function WasteSelection({ form }) {
   const [selectedServices, setSelectedServices] = useState([]);
 
   const handleSelect = (title) => {

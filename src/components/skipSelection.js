@@ -17,6 +17,7 @@ import {
 } from "@ant-design/icons";
 import { skipData } from "../assets/data/data";
 import ModalPage from "./modalPage";
+import { calculatePriceWithVAT } from "./vatCalc";
 
 const { Title, Text } = Typography;
 
@@ -37,12 +38,6 @@ function SkipSelection({ next, form }) {
   const [modalContent, setModalContent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-
-  const calculatePriceWithVAT = (basePrice, vatPercentage) => {
-    if (!basePrice || !vatPercentage) return basePrice;
-    const vatAmount = (basePrice * vatPercentage) / 100;
-    return Math.ceil(basePrice + vatAmount);
-  };
 
   const priceAfterVat = (item) =>
     calculatePriceWithVAT(item.price_before_vat, item.vat);

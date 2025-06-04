@@ -35,7 +35,6 @@ function ModalPage({
 }) {
   const handleContinue = async () => {
     await form.setFieldsValue({ skipSelection: modalContent });
-    console.log("Form values after setting skip:", form.getFieldsValue());
     setOpenModal(false);
     next();
   };

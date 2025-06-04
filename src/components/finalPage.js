@@ -16,24 +16,21 @@ import {
   CloseCircleTwoTone,
   InfoCircleOutlined,
 } from "@ant-design/icons";
+import { calculatePriceWithVAT } from "./vatCalc";
 
 const { Title, Text, Paragraph } = Typography;
 
 function FinalPage() {
   const form = Form.useFormInstance();
   const values = form.getFieldsValue();
+  console.log(values);
   const [skipValues, setSkipValues] = useState(null);
 
   useEffect(() => {
     if (values) {
-      setSkipValues(values.skipSelection);
+      setSkipValues(values?.skipSelection);
     }
   }, []);
-  const calculatePriceWithVAT = (basePrice, vatPercentage) => {
-    if (!basePrice || !vatPercentage) return basePrice;
-    const vatAmount = (basePrice * vatPercentage) / 100;
-    return Math.ceil(basePrice + vatAmount);
-  };
 
   const priceAfterVat = (item) =>
     calculatePriceWithVAT(item.price_before_vat, item.vat);
