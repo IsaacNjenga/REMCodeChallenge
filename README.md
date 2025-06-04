@@ -1,70 +1,80 @@
-# Getting Started with Create React App
+# Multi-Step Form with Ant Design (Skip Hire Application)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project implements a multi-step form in React using **Ant Design (antd)** for a skip hire service. The form is split into several logical steps, each collecting a different part of the user's input, and displays a summary on the final step.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- Multi-step form navigation using Ant Design's `Steps`
+- Shared global form state using `Form` and `form` instance
+- Data persistence between steps
+- Modal confirmation with data injection into the main form
+- Validation before navigating to next step
+- Summary page displaying all collected information
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Technologies Used
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- React
+- Ant Design (`antd`)
+- SweetAlert2 for alert modals
+- React Hooks (`useState`, `useEffect`)
+- Modular component design
 
-### `npm test`
+---
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Project Structure
+/src
+  ├── components/
+  │     ├── AddressSelection.js
+  │     ├── WasteSelection.js
+  │     ├── SkipSelection.js
+  │     ├── ModalPage.js
+  │     └── FinalPage.js
+  ├── pages/
+  │     └── Home.js
+  └── App.js
 
-### `npm run build`
+## Core Design Approach
+Single Source of Truth with Form
+A single global <Form form={form}> is defined in Home.js. This form instance is passed down to all step components via props to ensure centralized state management.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Step-by-Step Navigation
+The steps are defined as an array:
+const steps = [
+  { key: "postcode", content: <AddressSelection form={form} /> },
+  { key: "waste", content: <WasteSelection form={form} /> },
+  { key: "skip", content: <SkipSelection form={form} next={next} form={form} /> },
+  { key: "final", content: <FinalPage form={form} /> }
+];
+Each component renders only the relevant fields for its step.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Validation and Controlled Navigation
+Before moving to the next step, form.validateFields() ensures all required inputs are completed. On error, a SweetAlert informs the user.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+const next = async () => {
+  try {
+    await form.validateFields();
+    setCurrent(current + 1);
+  } catch {
+    Swal.fire({ icon: "warning", title: "Wait", text: "Please complete the current step before continuing." });
+  }
+};
 
-### `npm run eject`
+## Modal Integration
+In the skip selection step, a modal (ModalPage) is opened when a skip type is selected. Once confirmed, the selection is injected into the form using:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+form.setFieldsValue({ skipSelection: modalContent });
+This keeps everything within the form's state and avoids duplication.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Final Page Summary
+On the final step, FinalPage accesses all data using:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+form.getFieldsValue(true);
+This renders a full snapshot of all form values for review or confirmation.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Notes:
+All form fields are rendered within <Form.Item name="...">.
+Form.List is used for repeatable data (e.g., multiple addresses or waste types).
+No additional <Form> components are created inside children — all data lives in the root.
+The modal does not contain its own form; it simply updates the root form via props.
